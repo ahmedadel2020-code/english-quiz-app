@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { getWordList } = require("../controllers/getWordList");
+const { getWordList } = require("../controllers/wordListController");
 
 router.get("/", getWordList);
 
