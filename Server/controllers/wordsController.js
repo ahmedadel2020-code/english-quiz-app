@@ -4,7 +4,7 @@ const { wordList } = require("../utils/TestData.json");
 // @route   GET /api/wordList
 // @access  Private
 
-const getWordList = (req, res) => {
+const getWords = (req, res) => {
   const randomWords = [...wordList]
     .sort(() => 0.5 - Math.random())
     .filter(
@@ -20,5 +20,5 @@ const getWordList = (req, res) => {
 };
 
 module.exports = {
-  getWordList,
+  getWords,
 };
