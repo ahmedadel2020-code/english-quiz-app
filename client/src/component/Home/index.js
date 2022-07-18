@@ -8,11 +8,18 @@ import {
   CardContent,
   CardActions,
 } from "@mui/material";
-import MUIButton from "../UI/MUIButton";
+import { MUIButtonOutlined } from "../UI/MUIButton";
 import QuizPage from "../QuizPage";
 
+const StyledContainer = styled(Container)({
+  position: "absolute",
+  left: "50%",
+  top: "50%",
+  transform: "translate(-50%, -50%)",
+});
+
 const StyledCard = styled(Card)({
-  margin: "40px auto",
+  margin: "auto",
   padding: "40px",
 });
 const StyledTypography = styled(Typography)(({ theme }) => ({
@@ -32,21 +39,21 @@ const Home = () => {
   const [openQuizPage, setOpenQuizPage] = useState(false);
 
   const handleFetchWords = useCallback(() => {
-    setOpenQuizPage(true);
     fetch("http://localhost:5000/api/words")
       .then((response) => {
         return response.json();
       })
       .then((data) => {
         setWords(data.wordList);
+        setOpenQuizPage(true);
       });
   }, []);
   return (
-    <Container>
-      <StyledCard>
-        {openQuizPage ? (
-          <QuizPage words={words} />
-        ) : (
+    <StyledContainer>
+      {openQuizPage ? (
+        <QuizPage words={words} />
+      ) : (
+        <StyledCard>
           <Box sx={{ maxWidth: "500px", margin: "0 auto" }}>
             <CardContent>
               <Typography
@@ -65,12 +72,14 @@ const Home = () => {
               </Typography>
             </CardContent>
             <CardActions sx={{ display: "flex", justifyContent: "center" }}>
-              <MUIButton onClick={handleFetchWords}>Take Test</MUIButton>
+              <MUIButtonOutlined onClick={handleFetchWords}>
+                Take Test
+              </MUIButtonOutlined>
             </CardActions>
           </Box>
-        )}
-      </StyledCard>
-    </Container>
+        </StyledCard>
+      )}
+    </StyledContainer>
   );
 };
 

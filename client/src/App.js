@@ -1,4 +1,3 @@
-import MUIButton from "./component/UI/MUIButton";
 import Header from "./component/Header";
 import Home from "./component/Home";
 
