@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "server": "nodemon Server/server.js",
-    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix cd ../client && npm run build --prefix cd ../client"
+    "heroku-postbuild": "cd Server NPM_CONFIG_PRODUCTION=false npm install --prefix cd ../client && npm run build --prefix cd ../client"
   },
   "author": "Ahmed Adel",
   "license": "MIT",
