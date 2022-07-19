@@ -17,14 +17,23 @@ import {
   DialogTitle,
   useMediaQuery,
   Button,
+  Container,
 } from "@mui/material";
 import { useTheme } from "@emotion/react";
 import { MUIButtonContained } from "../UI/MUIButton";
 import RankPage from "../RankPage";
 
+const StyledContainer = styled(Container)({
+  position: "absolute",
+  left: "50%",
+  top: "50%",
+  transform: "translate(-50%, -50%)",
+});
+
 const StyledTypography = styled(Typography)(({ theme }) => ({
   textAlign: "center",
   fontWeight: "bold",
+  fontSize: "22px",
   color: theme.palette.primary.main,
   marginBottom: "20px",
 }));
@@ -32,7 +41,7 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
 const StyledCard = styled(Card)({
   margin: "auto",
   padding: "40px",
-  maxWidth: "500px",
+  maxWidth: "700px",
 });
 
 const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
@@ -58,13 +67,15 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
 }));
 
 const QuizPage = ({ words }) => {
+  const [selectedAnswer, setSelectedAnswer] = useState("");
   const [activeQuestion, setActiveQuestion] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState("");
+  const [answeredQuestions, setAnsweredQuestions] = useState(0);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [score, setScore] = useState(0);
   const [openAlert, setOpenAlert] = useState(false);
   const [checkAnswer, setCheckAnswer] = useState(false);
   const [disableChoices, setDisableChoices] = useState(false);
-  const [answeredQuestions, setAnsweredQuestions] = useState(0);
   const [openRankPage, setOpenRankPage] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const theme = useTheme();
@@ -79,6 +90,7 @@ const QuizPage = ({ words }) => {
       setSelectedAnswer(newAnswer);
       if (words[activeQuestion].pos === e.target.value) {
         setCheckAnswer(true);
+        setCorrectAnswers((prev) => prev + 1);
       } else {
         setCheckAnswer(false);
       }
@@ -101,12 +113,14 @@ const QuizPage = ({ words }) => {
   }, [answeredQuestions, totalQuestions]);
 
   const handleFinishQuiz = useCallback(() => {
+    const totalScore = (correctAnswers / totalQuestions) * 100;
+    setScore(totalScore);
     if (activeQuestion === totalQuestions - 1) {
       setOpenRankPage(true);
     } else {
       setOpenDialog(true);
     }
-  }, [totalQuestions, activeQuestion]);
+  }, [totalQuestions, activeQuestion, correctAnswers]);
 
   const handleCloseDialog = useCallback(() => {
     setOpenDialog(false);
@@ -120,54 +134,65 @@ const QuizPage = ({ words }) => {
   return (
     <div>
       {openRankPage ? (
-        <RankPage />
+        <RankPage score={score} />
       ) : (
-        <StyledCard>
-          <LinearProgress
-            variant="determinate"
-            value={progress}
-            sx={{ mb: 1 }}
-          />
-          <StyledTypography>{progress}%</StyledTypography>
-          <Collapse in={openAlert}>
-            <Alert severity={checkAnswer ? "success" : "error"} sx={{ mb: 2 }}>
-              {checkAnswer ? "Correct Answer" : "Wrong Answer"}
-            </Alert>
-          </Collapse>
-          <Box sx={{ maxWidth: "500px", margin: "0 auto" }}>
-            <StyledTypography>{words[activeQuestion].word}</StyledTypography>
-            <StyledToggleButtonGroup
-              value={selectedAnswer}
-              exclusive
-              onChange={handleSelectedAnswer}
-              fullWidth
-              disabled={disableChoices}
+        <StyledContainer>
+          <StyledCard>
+            <LinearProgress
+              variant="determinate"
+              value={progress}
+              sx={{ mb: 1 }}
+            />
+            <StyledTypography sx={{ fontSize: "17px" }}>
+              {progress}%
+            </StyledTypography>
+            <Collapse in={openAlert}>
+              <Alert
+                severity={checkAnswer ? "success" : "error"}
+                sx={{ mb: 2 }}
+              >
+                {checkAnswer ? "Correct Answer" : "Wrong Answer"}
+              </Alert>
+            </Collapse>
+            <Box sx={{ maxWidth: "700px", margin: "0 auto" }}>
+              <StyledTypography>{words[activeQuestion].word}</StyledTypography>
+              <StyledToggleButtonGroup
+                value={selectedAnswer}
+                exclusive
+                onChange={handleSelectedAnswer}
+                fullWidth
+                disabled={disableChoices}
+              >
+                <StyledToggleButton value="verb">Verb</StyledToggleButton>
+                <StyledToggleButton value="adjective">
+                  Adjective
+                </StyledToggleButton>
+                <StyledToggleButton value="noun">Noun</StyledToggleButton>
+                <StyledToggleButton value="adverb">Adverb</StyledToggleButton>
+              </StyledToggleButtonGroup>
+            </Box>
+            <Stack
+              direction="row"
+              spacing={2}
+              justifyContent={{ xs: "center", md: "flex-end" }}
+              sx={{ mt: 5 }}
             >
-              <StyledToggleButton value="verb">Verb</StyledToggleButton>
-              <StyledToggleButton value="adjective">
-                Adjective
-              </StyledToggleButton>
-              <StyledToggleButton value="noun">Noun</StyledToggleButton>
-              <StyledToggleButton value="adverb">Adverb</StyledToggleButton>
-            </StyledToggleButtonGroup>
-          </Box>
-          <Stack
-            direction="row"
-            spacing={2}
-            justifyContent={{ xs: "center", md: "flex-end" }}
-            sx={{ mt: 5 }}
-          >
-            <MUIButtonContained onClick={handleFinishQuiz}>
-              Finish
-            </MUIButtonContained>
-            <MUIButtonContained
-              onClick={handleNextQuestion}
-              disabled={activeQuestion === totalQuestions - 1}
-            >
-              Next
-            </MUIButtonContained>
-          </Stack>
-        </StyledCard>
+              <Button
+                variant="outlined"
+                onClick={handleFinishQuiz}
+                sx={{ textTransform: "none" }}
+              >
+                Finish
+              </Button>
+              <MUIButtonContained
+                onClick={handleNextQuestion}
+                disabled={activeQuestion === totalQuestions - 1}
+              >
+                Next
+              </MUIButtonContained>
+            </Stack>
+          </StyledCard>
+        </StyledContainer>
       )}
       <Dialog
         fullScreen={dialogResponsive}
@@ -184,7 +209,11 @@ const QuizPage = ({ words }) => {
             <MUIButtonContained onClick={handleCloseDialog}>
               Cancel
             </MUIButtonContained>
-            <Button variant="outlined" onClick={handleCloseQuiz}>
+            <Button
+              variant="outlined"
+              onClick={handleCloseQuiz}
+              sx={{ textTransform: "none" }}
+            >
               Yes
             </Button>
           </DialogActions>
