@@ -4,7 +4,7 @@
   "description": "English Quiz web application",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node Server/server.js",
     "server": "nodemon Server/server.js",
     "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"
   },
