@@ -143,7 +143,10 @@ const QuizPage = ({ words }) => {
               value={progress}
               sx={{ mb: 1 }}
             />
-            <StyledTypography sx={{ fontSize: "17px" }}>
+            <StyledTypography
+              role="progress-paragraph"
+              sx={{ fontSize: "17px" }}
+            >
               {progress}%
             </StyledTypography>
             <Collapse in={openAlert}>

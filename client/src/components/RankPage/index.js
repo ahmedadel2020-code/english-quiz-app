@@ -103,7 +103,9 @@ const RankPage = ({ score }) => {
         <StyledCard>
           <Box sx={{ margin: "0 auto" }}>
             <Box>
-              <StyledTypography>Your Rank is {usersRanks[0]}%</StyledTypography>
+              <StyledTypography role="testing-paragraph">
+                Your Rank is {usersRanks[0]}%
+              </StyledTypography>
             </Box>
             <Box>
               <Bar
