@@ -1,4 +1,4 @@
-import { render, fireEvent, waitFor, screen } from "../../../utils/unitTests";
+import { render, fireEvent, screen } from "../../../utils/unitTests";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
 
@@ -26,10 +26,13 @@ describe("Home Component", () => {
 
   test("Render Quiz Component when the button clicked", async () => {
     render(<Home />);
-    fireEvent.click(screen.getByText("Take Test"));
+    window.onload = async () => {
+      fireEvent.click(screen.getByText("Take Test"));
+    };
 
-    render(<QuizPage words={[{ id: 1, word: "slowly", pos: "adverb" }]} />);
-    await waitFor(() => screen.getByText("slowly"));
-    expect(screen.getByText("slowly")).toBeInTheDocument();
+    render(<QuizPage />);
+
+    const verbBtn = await screen.findByText("Verb");
+    expect(verbBtn).toBeInTheDocument();
   });
 });

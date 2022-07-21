@@ -38,53 +38,16 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
 }));
 
 const Home = () => {
-  const [words, setWords] = useState([]);
   const [openQuizPage, setOpenQuizPage] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [openSnackBar, setOpenSnackBar] = useState(false);
-
-  const handleFetchWords = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch("/api/words");
-      if (!response.ok) {
-        throw new Error("Something went wrong!");
-      }
-      const data = await response.json();
-      setWords(data.wordList);
+  
+  const handleTakeTestButton = useCallback(async () => {
       setOpenQuizPage(true);
-    } catch (error) {
-      setError(error.message);
-      setOpenSnackBar(true);
-    }
-    setIsLoading(false);
-  }, []);
-
-  const handleCloseSnackBar = useCallback((event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpenSnackBar(false);
   }, []);
 
   return (
     <div>
-      <Loading loading={isLoading} />
-      <Snackbar
-        open={openSnackBar}
-        autoHideDuration={10000}
-        onClose={handleCloseSnackBar}
-      >
-        {error && (
-          <Alert severity="error" onClose={handleCloseSnackBar}>
-            {error}
-          </Alert>
-        )}
-      </Snackbar>
       {openQuizPage ? (
-        <QuizPage words={words} />
+        <QuizPage />
       ) : (
         <StyledContainer>
           <StyledCard>
@@ -106,7 +69,7 @@ const Home = () => {
                 </Typography>
               </CardContent>
               <CardActions sx={{ display: "flex", justifyContent: "center" }}>
-                <MUIButtonOutlined onClick={handleFetchWords}>
+                <MUIButtonOutlined onClick={handleTakeTestButton}>
                   Take Test
                 </MUIButtonOutlined>
               </CardActions>

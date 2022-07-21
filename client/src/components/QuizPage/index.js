@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   LinearProgress,
   Box,
@@ -18,10 +18,12 @@ import {
   useMediaQuery,
   Button,
   Container,
+  Snackbar,
 } from "@mui/material";
 import { useTheme } from "@emotion/react";
 import { MUIButtonContained } from "../UI/MUIButton";
 import RankPage from "../RankPage";
+import Loading from "../UI/Loading";
 
 const StyledContainer = styled(Container)({
   position: "absolute",
@@ -66,13 +68,17 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   },
 }));
 
-const QuizPage = ({ words }) => {
+const QuizPage = () => {
+  const [error, setError] = useState(null);
+  const [words, setWords] = useState([]);
   const [selectedAnswer, setSelectedAnswer] = useState("");
   const [activeQuestion, setActiveQuestion] = useState(0);
   const [progress, setProgress] = useState(0);
   const [answeredQuestions, setAnsweredQuestions] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [score, setScore] = useState(0);
+  const [openSnackBar, setOpenSnackBar] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [openAlert, setOpenAlert] = useState(false);
   const [checkAnswer, setCheckAnswer] = useState(false);
   const [disableChoices, setDisableChoices] = useState(false);
@@ -80,7 +86,26 @@ const QuizPage = ({ words }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const theme = useTheme();
   const dialogResponsive = useMediaQuery(theme.breakpoints.down("md"));
-  const totalQuestions = words.length;
+
+  useEffect(() => {
+    const getWords = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch("/api/words");
+        if (!response.ok) {
+          throw new Error("Something went wrong, can't fetch words");
+        }
+        const data = await response.json();
+        setWords(data.wordList);
+      } catch (error) {
+        setError(error.message);
+        setOpenSnackBar(true);
+      }
+      setIsLoading(false);
+    };
+    getWords();
+  }, []);
 
   const handleSelectedAnswer = useCallback(
     (e, newAnswer) => {
@@ -94,15 +119,15 @@ const QuizPage = ({ words }) => {
       } else {
         setCheckAnswer(false);
       }
-      if (activeQuestion === totalQuestions - 1) {
+      if (activeQuestion === words.length - 1) {
         setProgress((prevProgress) => prevProgress + 10);
       }
     },
-    [activeQuestion, words, totalQuestions]
+    [activeQuestion, words]
   );
 
   const handleNextQuestion = useCallback(() => {
-    const calculateProgress = (answeredQuestions / totalQuestions) * 100;
+    const calculateProgress = (answeredQuestions / words.length) * 100;
     setSelectedAnswer("");
     setOpenAlert(false);
     setDisableChoices(false);
@@ -110,17 +135,17 @@ const QuizPage = ({ words }) => {
     setProgress((prevProgress) =>
       prevProgress >= 100 ? 0 : calculateProgress
     );
-  }, [answeredQuestions, totalQuestions]);
+  }, [answeredQuestions, words.length]);
 
   const handleFinishQuiz = useCallback(() => {
-    const totalScore = (correctAnswers / totalQuestions) * 100;
+    const totalScore = (correctAnswers / words.length) * 100;
     setScore(totalScore);
-    if (activeQuestion === totalQuestions - 1) {
+    if (activeQuestion === words.length - 1) {
       setOpenRankPage(true);
     } else {
       setOpenDialog(true);
     }
-  }, [totalQuestions, activeQuestion, correctAnswers]);
+  }, [words.length, activeQuestion, correctAnswers]);
 
   const handleCloseDialog = useCallback(() => {
     setOpenDialog(false);
@@ -131,8 +156,27 @@ const QuizPage = ({ words }) => {
     setOpenDialog(false);
   }, []);
 
+  const handleCloseSnackBar = useCallback((event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSnackBar(false);
+  }, []);
+
   return (
     <div>
+      <Loading loading={isLoading} />
+      <Snackbar
+        open={openSnackBar}
+        autoHideDuration={10000}
+        onClose={handleCloseSnackBar}
+      >
+        {error && (
+          <Alert severity="error" onClose={handleCloseSnackBar}>
+            {error}
+          </Alert>
+        )}
+      </Snackbar>
       {openRankPage ? (
         <RankPage score={score} />
       ) : (
@@ -144,7 +188,7 @@ const QuizPage = ({ words }) => {
               sx={{ mb: 1 }}
             />
             <StyledTypography
-              role="progress-paragraph"
+              role="progressParagraph"
               sx={{ fontSize: "17px" }}
             >
               {progress}%
@@ -158,7 +202,9 @@ const QuizPage = ({ words }) => {
               </Alert>
             </Collapse>
             <Box sx={{ maxWidth: "700px", margin: "0 auto" }}>
-              <StyledTypography>{words[activeQuestion].word}</StyledTypography>
+              <StyledTypography role="testWord">
+                {words.length > 1 ? words[activeQuestion].word : ""}
+              </StyledTypography>
               <StyledToggleButtonGroup
                 value={selectedAnswer}
                 exclusive
@@ -189,7 +235,7 @@ const QuizPage = ({ words }) => {
               </Button>
               <MUIButtonContained
                 onClick={handleNextQuestion}
-                disabled={activeQuestion === totalQuestions - 1}
+                disabled={activeQuestion === words.length - 1}
               >
                 Next
               </MUIButtonContained>

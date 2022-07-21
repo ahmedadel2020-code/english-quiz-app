@@ -8,15 +8,18 @@ import {
   Snackbar,
   Alert,
   Typography,
+  Stack,
 } from "@mui/material";
 import {
+  Chart,
   BarElement,
   CategoryScale,
-  Chart,
   LinearScale,
   Tooltip,
 } from "chart.js";
 import Loading from "../UI/Loading";
+import { MUIButtonOutlined } from "../UI/MUIButton";
+import QuizPage from "../QuizPage";
 
 const StyledContainer = styled(Container)({
   position: "absolute",
@@ -40,43 +43,65 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
   marginBottom: "20px",
 }));
 
-Chart.register(LinearScale, CategoryScale, BarElement, Tooltip);
+Chart.register(BarElement, CategoryScale, LinearScale, Tooltip);
 
 const RankPage = ({ score }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [openSnackBar, setOpenSnackBar] = useState(false);
+  const [openQuizPage, setOpenQuizPage] = useState(false);
   const [error, setError] = useState(null);
   const [usersRanks, setUsersRanks] = useState([]);
 
-  const handleSendRank = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch("/api/rank", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          score: score,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error("Something went wrong!");
+  useEffect(() => {
+    const getRanks = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch("/api/rank", {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            score: score,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error("Something went wrong!");
+        }
+        const data = await response.json();
+        setUsersRanks(data.ranks);
+      } catch (error) {
+        setError(error.message);
+        setOpenSnackBar(true);
       }
-      const data = await response.json();
-      setUsersRanks(data.ranks);
-    } catch (error) {
-      setError(error.message);
-      setOpenSnackBar(true);
-    }
+    };
+    getRanks();
     setIsLoading(false);
   }, [score]);
 
-  useEffect(() => {
-    handleSendRank();
-  }, [handleSendRank]);
+  let merged = usersRanks.map((user, i) => {
+    if (i === 0) {
+      return { background: "#667eea", datapoint: usersRanks[i], label: "You" };
+    } else {
+      return {
+        background: "#e5e5e5",
+        datapoint: usersRanks[i],
+        label: `User ${i}`,
+      };
+    }
+  });
+
+  const dataSort = merged.sort((b, a) => a.datapoint - b.datapoint);
+  const newData = [];
+  const newBackgroundColors = [];
+  const newLabel = [];
+  for (let i = 0; i < dataSort.length; i++) {
+    newData.push(dataSort[i].datapoint);
+    newBackgroundColors.push(dataSort[i].background);
+    newLabel.push(dataSort[i].label);
+  }
 
   const handleCloseSnackBar = useCallback((reason) => {
     if (reason === "clickaway") {
@@ -85,68 +110,75 @@ const RankPage = ({ score }) => {
     setOpenSnackBar(false);
   }, []);
 
+  const handleTryAgainButton = useCallback(() => {
+    setOpenQuizPage(true);
+  }, []);
+
   return (
     <div>
-      <Loading loading={isLoading} />
-      <Snackbar
-        open={openSnackBar}
-        autoHideDuration={10000}
-        onClose={handleCloseSnackBar}
-      >
-        {error && (
-          <Alert severity="error" onClose={handleCloseSnackBar}>
-            {error}
-          </Alert>
-        )}
-      </Snackbar>
-      <StyledContainer>
-        <StyledCard>
-          <Box sx={{ margin: "0 auto" }}>
-            <Box>
-              <StyledTypography role="testing-paragraph">
-                Your Rank is {usersRanks[0]}%
-              </StyledTypography>
-            </Box>
-            <Box>
-              <Bar
-                data={{
-                  labels: usersRanks.map((user, index) => {
-                    if (index === 0) {
-                      return "You";
-                    } else {
-                      return `User ${index}`;
-                    }
-                  }),
-                  datasets: [
-                    {
-                      label: "Rank",
-                      data: usersRanks,
-                      backgroundColor: usersRanks.map((user, index) => {
-                        if (index === 0) {
-                          return "#667eea";
-                        } else {
-                          return "#e5e5e5";
-                        }
-                      }),
-                    },
-                  ],
+      {openQuizPage ? (
+        <QuizPage />
+      ) : (
+        <div>
+          <Loading loading={isLoading} />
+          <Snackbar
+            open={openSnackBar}
+            autoHideDuration={10000}
+            onClose={handleCloseSnackBar}
+          >
+            {error && (
+              <Alert severity="error" onClose={handleCloseSnackBar}>
+                {error}
+              </Alert>
+            )}
+          </Snackbar>
+          <StyledContainer>
+            <StyledCard>
+              <Box sx={{ margin: "0 auto" }}>
+                <Box>
+                  <StyledTypography role="testing-paragraph">
+                    Your Rank among your peers is {usersRanks[0]}%
+                  </StyledTypography>
+                </Box>
+                <Box>
+                  <Bar
+                    data={{
+                      labels: newLabel,
+                      datasets: [
+                        {
+                          label: "Your Rank",
+                          data: newData,
+                          backgroundColor: newBackgroundColors,
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      scales: {
+                        y: {
+                          max: 100,
+                        },
+                      },
+                    }}
+                    height={400}
+                  />
+                </Box>
+              </Box>
+            </StyledCard>
+            <Stack direction="row" justifyContent="center">
+              <MUIButtonOutlined
+                sx={{
+                  mt: 5,
                 }}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  scales: {
-                    yAxis: {
-                      beginAtZero: true,
-                      max: 100,
-                    },
-                  },
-                }}
-                height={500}
-              />
-            </Box>
-          </Box>
-        </StyledCard>
-      </StyledContainer>
+                onClick={handleTryAgainButton}
+              >
+                Try again
+              </MUIButtonOutlined>
+            </Stack>
+          </StyledContainer>
+        </div>
+      )}
     </div>
   );
 };

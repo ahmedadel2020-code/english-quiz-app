@@ -19,10 +19,13 @@ const setRank = (req, res) => {
       }
     }
   }
-  const userRank = ((countScoresBelowUser / scoresList.length) * 100).toFixed(
-    2
-  );
-  ranks.push(userRank);
+  const userRank = (countScoresBelowUser / scoresList.length) * 100;
+  if (userRank % 1 !== 0) {
+    const toFloat = userRank.toFixed(2);
+    ranks.push(toFloat);
+  } else {
+    ranks.push(userRank);
+  }
 
   for (let i = 0; i < scoresList.length; i++) {
     let countScoresOfOtherUsers = 0;
@@ -34,11 +37,13 @@ const setRank = (req, res) => {
         countScoresOfOtherUsers++;
       }
     }
-    const otherUsersRank = (
-      (countScoresOfOtherUsers / scoresList.length) *
-      100
-    ).toFixed(2);
-    ranks.push(otherUsersRank);
+    const otherUsersRank = (countScoresOfOtherUsers / scoresList.length) * 100;
+    if (otherUsersRank % 1 !== 0) {
+      const toFloat = otherUsersRank.toFixed(2);
+      ranks.push(toFloat);
+    } else {
+      ranks.push(otherUsersRank);
+    }
   }
   res.status(200).json({ ranks });
 };
