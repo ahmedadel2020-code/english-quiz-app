@@ -8,7 +8,6 @@ In this App you will have a Quiz of 10 Questions where you will choose whether t
 ## Table of Contents
 * [General Info](#general-information)
 * [Technologies Used](#technologies-used)
-* [Screenshots](#screenshots)
 * [Setup](#setup)
 * [Usage](#usage)
 
