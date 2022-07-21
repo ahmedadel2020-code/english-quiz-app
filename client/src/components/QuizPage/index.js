@@ -3,7 +3,6 @@ import {
   LinearProgress,
   Box,
   Stack,
-  Typography,
   styled,
   Card,
   ToggleButtonGroup,
@@ -17,35 +16,23 @@ import {
   DialogTitle,
   useMediaQuery,
   Button,
-  Container,
   Snackbar,
 } from "@mui/material";
 import { useTheme } from "@emotion/react";
 import { MUIButtonContained } from "../UI/MUIButton";
+import { StyledContainer } from "../UI/MUIContainer";
+import { StyledTypography } from "../UI/MUITypography";
 import RankPage from "../RankPage";
 import Loading from "../UI/Loading";
 
-const StyledContainer = styled(Container)({
-  position: "absolute",
-  left: "50%",
-  top: "50%",
-  transform: "translate(-50%, -50%)",
-});
-
-const StyledTypography = styled(Typography)(({ theme }) => ({
-  textAlign: "center",
-  fontWeight: "bold",
-  fontSize: "22px",
-  color: theme.palette.primary.main,
-  marginBottom: "20px",
-}));
-
+// override Material UI Card styles
 const StyledCard = styled(Card)({
   margin: "auto",
   padding: "40px",
   maxWidth: "700px",
 });
 
+// override Material UI ToggleButton styles
 const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
   textTransform: "none",
   borderRadius: "5px !important",
@@ -56,6 +43,7 @@ const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
   },
 }));
 
+// override Material UI ToggleButtonGroup styles
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   [theme.breakpoints.down("md")]: {
     flexDirection: "column",
@@ -69,26 +57,46 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
 }));
 
 const QuizPage = () => {
+  // state for error in our call to API
   const [error, setError] = useState(null);
+  // state to save words array
   const [words, setWords] = useState([]);
+  // state to save the selected button name to compare it with the correct answer
   const [selectedAnswer, setSelectedAnswer] = useState("");
+  // state to for the current question being displayed
   const [activeQuestion, setActiveQuestion] = useState(0);
+  // state for progress bar percentage
   const [progress, setProgress] = useState(0);
+  // state to save the number of answered questions
   const [answeredQuestions, setAnsweredQuestions] = useState(0);
+  // state to save the number of correct answers
   const [correctAnswers, setCorrectAnswers] = useState(0);
+  // state to save our total score
   const [score, setScore] = useState(0);
+  // state for snack bar
   const [openSnackBar, setOpenSnackBar] = useState(false);
+  // state for loading while fetching
   const [isLoading, setIsLoading] = useState(false);
+  // state to open alert or close it
   const [openAlert, setOpenAlert] = useState(false);
+  // state to check if the answer is correct to display the alert
   const [checkAnswer, setCheckAnswer] = useState(false);
+  // state to disable buttons after user select answer
   const [disableChoices, setDisableChoices] = useState(false);
+  // state to open rank page
   const [openRankPage, setOpenRankPage] = useState(false);
+  // state to open or close dialog
   const [openDialog, setOpenDialog] = useState(false);
+
+  // handle responsive dialog
   const theme = useTheme();
   const dialogResponsive = useMediaQuery(theme.breakpoints.down("md"));
 
+  // once component is rendered will make a request to our endpoint
+  // then fetch words data
   useEffect(() => {
     const getWords = async () => {
+      // loading
       setIsLoading(true);
       setError(null);
       try {
@@ -97,9 +105,11 @@ const QuizPage = () => {
           throw new Error("Something went wrong, can't fetch words");
         }
         const data = await response.json();
+        // set words to our state
         setWords(data.wordList);
       } catch (error) {
         setError(error.message);
+        // if there is error will open a snackbar
         setOpenSnackBar(true);
       }
       setIsLoading(false);
@@ -107,55 +117,76 @@ const QuizPage = () => {
     getWords();
   }, []);
 
+  // function to handle selected answer by user
   const handleSelectedAnswer = useCallback(
     (e, newAnswer) => {
+      // open alert to show user if his answer is correct or not
       setOpenAlert(true);
+      // disable choices
       setDisableChoices(true);
+      // increment the answered questions
       setAnsweredQuestions((prev) => prev + 1);
+      // select the button that user clicked on
       setSelectedAnswer(newAnswer);
+      // if the answer is correct will increment the correct answers and display alert
+      // to show that this answer is correct
       if (words[activeQuestion].pos === e.target.value) {
         setCheckAnswer(true);
         setCorrectAnswers((prev) => prev + 1);
       } else {
+        // display alert that the answer was not correct
         setCheckAnswer(false);
       }
       if (activeQuestion === words.length - 1) {
+        // handle the progress bar when user is on the last question
         setProgress((prevProgress) => prevProgress + 10);
       }
     },
     [activeQuestion, words]
   );
 
+  // function to handle when user click on next button
   const handleNextQuestion = useCallback(() => {
+    // calculate progress percentage
     const calculateProgress = (answeredQuestions / words.length) * 100;
     setSelectedAnswer("");
     setOpenAlert(false);
     setDisableChoices(false);
+    // increment the index of question
     setActiveQuestion((prevActiveQuestion) => prevActiveQuestion + 1);
+    // set progress state percentage
     setProgress((prevProgress) =>
       prevProgress >= 100 ? 0 : calculateProgress
     );
   }, [answeredQuestions, words.length]);
 
+  // function to handle when user click on finish button
   const handleFinishQuiz = useCallback(() => {
+    // calculate total score
     const totalScore = (correctAnswers / words.length) * 100;
     setScore(totalScore);
+    // if the user finish the last question will open rank page
     if (activeQuestion === words.length - 1) {
       setOpenRankPage(true);
     } else {
+      // open dialog and ask user if he want to continue or not
       setOpenDialog(true);
     }
   }, [words.length, activeQuestion, correctAnswers]);
 
+  // function to close dialog
   const handleCloseDialog = useCallback(() => {
     setOpenDialog(false);
   }, []);
 
+  // function to handle when user click on yes button in Dialog to finish the quiz
+  // user will go to rank page if click on Yes button, then will close the dialog
   const handleCloseQuiz = useCallback(() => {
     setOpenRankPage(true);
     setOpenDialog(false);
   }, []);
 
+  // function to close the alert
   const handleCloseSnackBar = useCallback((event, reason) => {
     if (reason === "clickaway") {
       return;

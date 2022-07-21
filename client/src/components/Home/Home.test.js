@@ -5,6 +5,7 @@ import { setupServer } from "msw/node";
 import QuizPage from "../QuizPage";
 import Home from ".";
 
+// mock request to our endpoint words
 const server = setupServer(
   rest.get("/api/words", (req, res, ctx) => {
     return res(
@@ -13,6 +14,7 @@ const server = setupServer(
   })
 );
 
+// listen to requests before all test and after all tests will close server
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());

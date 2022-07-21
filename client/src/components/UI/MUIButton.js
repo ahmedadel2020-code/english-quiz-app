@@ -1,5 +1,6 @@
 import { Button, styled } from "@mui/material";
 
+// override MUI Button styles
 export const MUIButtonOutlined = styled(Button)(({ theme }) => ({
   color: theme.palette.primary.main,
   border: `1px solid ${theme.palette.primary.main}`,
@@ -17,6 +18,8 @@ export const MUIButtonOutlined = styled(Button)(({ theme }) => ({
     cursor: "default",
   },
 }));
+
+// override MUI Button styles
 
 export const MUIButtonContained = styled(Button)(({ theme }) => ({
   color: "white",

@@ -5,6 +5,10 @@ const { wordList } = require("../utils/TestData.json");
 // @access  Private
 
 const getWords = (req, res) => {
+  // get words from wordList then sort them to choose random 10 object
+  // filter our words to make sure it has one verb, one adverb, one adjective and one noun
+  // take the first 10 objects from our list
+
   const randomWords = [...wordList]
     .sort(() => 0.5 - Math.random())
     .filter(

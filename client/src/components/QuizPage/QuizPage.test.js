@@ -4,6 +4,7 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import RankPage from "../RankPage";
 
+// mock request to our endpoint words
 const words = rest.get("/api/words", (req, res, ctx) => {
   return res(
     ctx.json({
@@ -11,12 +12,17 @@ const words = rest.get("/api/words", (req, res, ctx) => {
     })
   );
 });
+
+// mock request to our endpoint rank
+
 const rank = rest.post("/api/rank", (req, res, ctx) => {
   return res(ctx.json(["90.00", "12.00"]));
 });
 const handlers = [words, rank];
 
 const server = new setupServer(...handlers);
+
+// listen to requests before all test and after all tests will close server
 
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
