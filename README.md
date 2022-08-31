@@ -33,7 +33,7 @@ To install the project and use it:
 - Clone the project.
 - Go to the root of project. 
 ```
-cd English-Quiz-App
+cd english-quiz-app
 ```
 - In the root of project, install dependencies
 ```
