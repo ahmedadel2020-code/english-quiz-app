@@ -1,7 +1,7 @@
 [build]
   command = "npm run deploy"
-  publish = "build"
+  publish = "/client/build"
 
 [build.environment]
   NODE_ENV = "production"
-  PORT = "5000"
+  PORT = 5000
