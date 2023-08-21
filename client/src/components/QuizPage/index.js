@@ -100,7 +100,7 @@ const QuizPage = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch("/api/words");
+        const response = await fetch("./api/words");
         if (!response.ok) {
           throw new Error("Something went wrong, can't fetch words");
         }
