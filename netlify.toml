@@ -4,3 +4,4 @@
 
 [build.environment]
   NODE_ENV = "production"
+  PORT = 5000
