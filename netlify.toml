@@ -1,5 +1,5 @@
 [build]
-  command = "npm run postbuild"
+  command = "npm run deploy:netlify"
   publish = "build"
 
 [build.environment]
