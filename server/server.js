@@ -19,7 +19,7 @@ app.use("/api/words", require("./routes/wordsRoute"));
 app.use("/api/rank", require("./routes/rankRoute"));
 
 // Serve frontend
-if (process.env.NODE_ENV !== "development") {
+if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../client/build")));
 
   app.get("*", (req, res) =>
